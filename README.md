@@ -11,10 +11,11 @@ Contents of the repo:
 1. AWS_CF.yml --> Cloudformation  
 2. AWS Architecture.png --> Architecture of the AWS infrastructure.
 3. AWS CF architecture.png --> Architecture as built in AWS Cloudformation.
+4. TechTestApp.tar --> The complete source code with compiled package.
 4. Readme.md --> Information about the solution.
 
 There are two stages involved in setting up TechTestApp on AWS :  
-1. Building the application locally using go.  
+1. Building the application locally using go (instructions for the same are located here : https://github.com/servian/TechTestApp/blob/master/doc/readme.md)  
 2. Deploying the same via AWS cloudformation.  
 
                                                 # AWS Architecture  
