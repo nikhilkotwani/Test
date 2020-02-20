@@ -24,6 +24,6 @@ There are two stages involved in setting up TechTestApp on AWS :
                                                       
                                                         
 
-                ![](images/Application_Architecture.jpg)
+                ![](images/Application_Architecture.png)
 
 
