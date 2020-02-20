@@ -248,7 +248,14 @@ Resources:
       ManagedPolicyArns:
       - !Ref S3AccessPolicy
       Path: "/"    
-
+  
+  EC2WebRoleProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref EC2WebRole
+          
   S3AccessPolicy: # these actions are needed bu the Hacky LauchConfig UserData script which installs aws cli and code deploy agent from s3
     Type: AWS::IAM::Policy
     Properties:
@@ -323,6 +330,7 @@ Resources:
         ImageId: ami-0f767afb799f45102     
       SecurityGroups:
         !GetAtt SGexternalWebserver.GroupId
+      IamInstanceProfile: !Ref EC2WebRoleProfile  
       UserData:
         'Fn::Base64': !Sub |
          #!/bin/bash -xe
