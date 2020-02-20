@@ -1,0 +1,566 @@
+AWSTemplateFormatVersion:
+  "2010-09-09"
+Description:
+  "A web application VPC with two private subnets and two public subnets in two AZ"
+Parameters:
+  VPCName:
+    Default: TechTest
+    Description: "TechTest"
+    Type: "String"
+  KeyName:
+    Default: Techtest
+    Description: Name of an existing EC2 KeyPair to enable access into the servers
+    Type: AWS::EC2::KeyPair::KeyName
+  VPCCidr:
+    Description: "IP address range of TechTest VPC"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.0.0/16"
+    Type: "String"
+  PubSubnetACidr:
+    Description: "IP address range of Public Subnet A"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.10.0/24"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Type: "String"
+  PubSubnetBCidr:
+    Description: "IP address range of Public Subnet B"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.20.0/24"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Type: "String"
+  WebSubnetACidr:
+    Description: "IP address range of Web Subnet A"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.11.0/24"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Type: "String"
+  WebSubnetBCidr:
+    Description: "IP address range of Web Subnet B"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.21.0/24"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Type: "String"
+  DBName:
+    Default: app
+    Description: The database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric.
+  DBUser:
+    NoEcho: 'true'
+    Description: The database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Type: String
+    MinLength: '1'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z]'
+    ConstraintDescription: must contain only alphabets.
+  MultiAZ:
+    Description: Multi-AZ master database
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    ConstraintDescription: must be true or false.  
+  DBAllocatedStorage:
+    Default: '5'
+    Description: The size of the database (Gb)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '10'
+    ConstraintDescription: must be between 5 and 10Gb.
+  DBInstanceClass:
+    Description: The database instance type
+    Type: String
+    Default: db.t2.micro
+    AllowedValues: [ db.t2.micro]
+    ConstraintDescription: must select a valid database instance type.
+  InstanceType:
+    Description: "EC2 instance type for the Auto scaling group"
+    Type: String 
+    Default: db.t2.micro
+    AllowedValues: [db.t2.micro]
+   
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref "VPCCidr"
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+        - Key: "Name"
+          Value: "OPS"
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Ref "PubSubnetACidr"
+      MapPublicIpOnLaunch: "True"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Public Subnet A ] ]
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Ref "PubSubnetBCidr"
+      MapPublicIpOnLaunch: "True"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Public Subnet B ] ]
+  WebSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Ref "WebSubnetACidr"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Web Subnet A ] ]
+  WebSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Ref "WebSubnetBCidr"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Web Subnet B ] ]
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: !Ref "VPCName"
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref "VPC"
+      InternetGatewayId: !Ref "InternetGateway"
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Public Route Table ] ]
+  RouteToIGW:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+      RouteTableId: !Ref "PublicRouteTable"
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PubSubARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PublicSubnetA"
+      RouteTableId: !Ref "PublicRouteTable"
+  PubSubBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PublicSubnetB"
+      RouteTableId: !Ref "PublicRouteTable"
+  ElasticIPA:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  ElasticIPB:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  NATGatewayA:
+    DependsOn: AttachGateway
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt "ElasticIPA.AllocationId"
+      SubnetId: !Ref "PublicSubnetA"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, NGWA ] ]
+  NATGatewayB:
+    DependsOn: AttachGateway
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt "ElasticIPB.AllocationId"
+      SubnetId: !Ref "PublicSubnetB"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, NGWB ] ]
+  WebSubnetARouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Web Subnet A Route Table ] ]
+  WebSubnetBRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref "VPC"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, Web Subnet B Route Table ] ]
+  
+  EC2WebRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+      - !Ref S3AccessPolicy
+      Path: "/"    
+
+  S3AccessPolicy: # these actions are needed bu the Hacky LauchConfig UserData script which installs aws cli and code deploy agent from s3
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Join [ "-", [ !Ref VPCName,S3,Access,policy ] ]
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:Get*
+          - s3:List*
+          Resource: ["arn:aws:s3:::testtechpackage/*"]
+
+  RouteToNATGatewayAfromWeb:
+    Type: AWS::EC2::Route
+    DependsOn: NATGatewayA
+    Properties:
+      RouteTableId: !Ref "WebSubnetARouteTable"
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGatewayA  
+  RouteToNATGatewayBfromWeb:
+    Type: AWS::EC2::Route
+    DependsOn: NATGatewayB
+    Properties:
+      RouteTableId: !Ref "WebSubnetBRouteTable"
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGatewayB      
+  WebSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "WebSubnetA"
+      RouteTableId: !Ref "WebSubnetARouteTable"
+  WebSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "WebSubnetB"
+      RouteTableId: !Ref "WebSubnetBRouteTable"
+  albext1:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: "OPS-alb-ext-1"
+      Scheme: internet-facing
+      Subnets:
+      - Ref: PublicSubnetA
+      - Ref: PublicSubnetB
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: '50'
+      SecurityGroups:
+      - Ref: SGalbext1
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " - ", [ !Ref VPCName, ext alb 1 ] ]
+
+  albext1lstn1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: albext1tg1
+      LoadBalancerArn:
+        Ref: albext1
+      Port: '80'
+      Protocol: HTTP
+
+ 
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName:
+        Ref: KeyName
+        ImageId: ami-0f767afb799f45102     
+      SecurityGroups:
+        !GetAtt SGexternalWebserver.GroupId
+      UserData:
+        'Fn::Base64': !Sub |
+         #!/bin/bash -xe
+         sudo yum update -y
+         sudo yum install -y golang
+         mkdir /home/ec2-user/go/bin
+         $DBhost = !GetAtt [TechDB , Endpoint.Address ]
+         chown -R ec2-user:ec2-user /home/ec2-user
+         echo "export PATH=$PATH:/usr/lib/golang/bin/" > ~/.bash_profile
+         echo "export GOPATH=/home/ec2-user/go/" >> ~/.bash_profile
+         echo "export GOROOT=/usr/lib/golang/bin" >> ~/.bash_profile
+         echo "export GOBIN=/home/ec2-user/go/bin" >> ~/.bash_profile
+         source ~/.bash_profile
+         curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+         aws s3 cp s3://testtechpackage/TechTestApp.tar /home/ec2-user/
+         tar -xvf TechTestApp.tar
+         sed '/DbHost/ s/localhost/$DBhost/' /home/ec2-user/TechTestApp/dist/conf.toml 
+         rm-rf TechTestApp.tar
+         nohup /home/ec2-user/TechTestApp/dist/TechTestApp updatedb -s > /home/ec2-user/TechTestAppDBUpdate.log &
+         sleep 10
+         nohup /home/ec2-user/TechTestApp/dist/TechTestApp serve > /home/ec2-user/TechTestApp.log & 
+
+      InstanceType:
+        Ref: "InstanceType"
+      LaunchConfigurationName: TechTestLaunchConfiguration
+
+  
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: TechTest ASG
+      Cooldown: 120
+      DesiredCapacity:
+        Ref: 2
+      LaunchConfigurationName: TechTestLaunchConfiguration
+      MaxSize:
+        Ref: 2
+      MinSize:
+        Ref: 2
+      Tags:
+        - 
+          Key: Name
+          Value: TechTest ASG
+          PropagateAtLaunch: 'true'
+      VPCZoneIdentifier:
+        - Ref: WebSubnetA
+        - Ref: WebSubnetB
+      TargetGroupARNs:
+        - 
+          Ref: albext1tg1 
+
+  RDGWSubnetA:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      InstanceType: t2.micro
+      ImageId: ami-0f767afb799f45102
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+      - !GetAtt SGrdgwserveraccess.GroupId
+      Tags:
+        - 
+          Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, RDGWSubnetA ] ]
+        - 
+          Key: "Environment"
+          Value: !Ref VPCName
+
+  RDGWSubnetB:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      InstanceType: t2.micro
+      ImageId: ami-0f767afb799f45102
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+      - !GetAtt SGrdgwserveraccess.GroupId
+      Tags:
+        - 
+          Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, RDGWSubnetB ] ]
+        - 
+          Key: "Environment"
+          Value: !Ref VPCName  
+                
+  albext1tg1:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 4
+      HealthCheckPath: /healthcheck/
+      Name: !Join [ "-", [ !Ref VPCName, trg1 ] ]
+      Port: 3000
+      Protocol: HTTP
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '20'
+      - Key: stickiness.enabled
+        Value: 'false'
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPC
+      Tags:
+      - Key: "Name"
+        Value: !Join [ " : ", [ !Ref VPCName, alb trg1 ] ]
+
+  TechDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref 'DBName'
+      AllocatedStorage: !Ref 'DBAllocatedStorage'
+      DBInstanceClass: !Ref 'DBInstanceClass'
+      Engine: postgres
+      MasterUsername: !Ref 'DBUser'
+      MasterUserPassword: !Ref 'DBPassword'
+      MultiAZ: !Ref 'MultiAZ'
+      Tags:
+      - Key: Name
+        Value: Techtest DB
+      DBSecurityGroups: !Ref SGRDS 
+    DeletionPolicy: Snapshot
+  
+  
+  SGalbext1:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Join [ " : ", [ !Ref VPCName, alb ext 1 ] ]
+      GroupDescription: !Join [ " : ", [ !Ref VPCName, alb ext 1 ] ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+          Description: "HTTPS traffic from the internet"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, alb ext 1 ] ]
+  
+  SGexternalWebserver:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Join [ " : ", [ !Ref VPCName, external web] ]
+      GroupDescription: !Join [ " : ", [ !Ref VPCName, external web] ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '3000'
+          SourceSecurityGroupId: !GetAtt SGalbext1.GroupId
+          Description: "HTTP traffic from alb ext 1"
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
+          Description: "SSH traffic from RDGW in public Subnets A and B"  
+
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, external web] ]
+
+  SGRDS:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Join [ " : ", [ !Ref VPCName, external web] ]
+      GroupDescription: !Join [ " : ", [ !Ref VPCName, external web] ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          SourceSecurityGroupId: !GetAtt SGexternalWebserver.GroupId
+          Description: "DB traffic from Web Servers"
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
+          Description: "SSH traffic from RDGW in public Subnets A and B"  
+
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, external web] ]
+        
+
+  
+  SGrdgwserveraccess:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Join [ " : ", [ !Ref VPCName, rdgw server access ] ]
+      GroupDescription: !Join [ " : ", [ !Ref VPCName, rdgw server access ] ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+          Description: "SSH traffic from Internet"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, rdgw server access ] ]
+  
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "VPC Configuration"
+        Parameters:
+          - VPCName
+          - VPCCidr
+          - PubSubnetACidr
+          - PubSubnetBCidr
+          - WebSubnetACidr
+          - WebSubnetBCidr
+    ParameterLabels:
+      VPCName:
+        default: "VPC Name"
+      VPCCidr:
+        default: "VPC CIDR Block"
+      PubSubnetACidr:
+        default: "Public Subnet A CIDR Block"
+      PubSubnetBCidr:
+        default: "Public Subnet B CIDR Block"
+      WebSubnetACidr:
+        default: "Web Subnet A CIDR Block"
+      WebSubnetBCidr:
+        default: "Web Subnet B CIDR Block"
+Outputs:
+  NATGatewayA:
+    Description: NAT Gateway in AZ A
+    Value: !Ref "NATGatewayA"
+  EIPAddressA:
+    Description: EIP allocated to NAT Gateway A
+    Value: !Ref "ElasticIPA"
+  NATGatewayB:
+    Description: NAT Gateway in AZ B
+    Value: !Ref "NATGatewayB"
+  EIPAddressB:
+    Description: EIP allocated to NAT Gateway B
+    Value: !Ref "ElasticIPB"
