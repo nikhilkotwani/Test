@@ -10,6 +10,19 @@ The overall deployment steps are:
 Contents of the repo:  
 1. AWS_CF.yml --> Cloudformation  
 2. AWS Architecture.png --> Architecture of the AWS infrastructure.
-3. ..... --> Application Architecture.
+3. AWS CF architecture.png --> Architecture as built in AWS Cloudformation.
+4. Readme.md --> Information about the solution.
+
+There are two stages involved in setting up TechTestApp on AWS :  
+1. Building the application locally using go.  
+2. Deploying the same via AWS cloudformation.  
+
+                                                # AWS Architecture  
+                                                  
+                                                    
+                                                      
+                                                        
+
+                ![Application_Architecture.jpg](https://github.com/nikhilkotwani/Test/Application_Architecture.jpg)
 
 

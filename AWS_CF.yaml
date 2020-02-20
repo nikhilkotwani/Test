@@ -96,8 +96,8 @@ Parameters:
   InstanceType:
     Description: "EC2 instance type for the Auto scaling group"
     Type: String 
-    Default: db.t2.micro
-    AllowedValues: [db.t2.micro]
+    Default: t2.micro
+    AllowedValues: [t2.micro]
    
 
 Resources:
@@ -255,7 +255,7 @@ Resources:
       Path: /
       Roles:
       - !Ref EC2WebRole
-          
+
   S3AccessPolicy: # these actions are needed bu the Hacky LauchConfig UserData script which installs aws cli and code deploy agent from s3
     Type: AWS::IAM::Policy
     Properties:
@@ -292,6 +292,7 @@ Resources:
     Properties:
       SubnetId: !Ref "WebSubnetB"
       RouteTableId: !Ref "WebSubnetBRouteTable"
+
   albext1:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -328,11 +329,9 @@ Resources:
       KeyName:
         Ref: KeyName
         ImageId: ami-0f767afb799f45102     
-      SecurityGroups:
-        !GetAtt SGexternalWebserver.GroupId
+      SecurityGroups: !Ref SGexternalWebserver
       IamInstanceProfile: !Ref EC2WebRoleProfile  
-      UserData:
-        'Fn::Base64': !Sub |
+      UserData: !Base64 |
          #!/bin/bash -xe
          sudo yum update -y
          sudo yum install -y golang
@@ -352,24 +351,25 @@ Resources:
          nohup /home/ec2-user/TechTestApp/dist/TechTestApp updatedb -s > /home/ec2-user/TechTestAppDBUpdate.log &
          sleep 10
          nohup /home/ec2-user/TechTestApp/dist/TechTestApp serve > /home/ec2-user/TechTestApp.log & 
-
-      InstanceType:
-        Ref: "InstanceType"
+      InstanceType: !Ref 'InstanceType'
       LaunchConfigurationName: TechTestLaunchConfiguration
 
   
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: 
+      - TechDB
+      - albext1
+      - LaunchConfig
     Properties:
       AutoScalingGroupName: TechTest ASG
       Cooldown: 120
       DesiredCapacity:
         Ref: 2
-      LaunchConfigurationName: TechTestLaunchConfiguration
-      MaxSize:
-        Ref: 2
-      MinSize:
-        Ref: 2
+      LaunchConfigurationName: !Ref LaunchConfig
+      LoadBalancerNames: !Ref 'albext1'
+      MaxSize: 2
+      MinSize: 2
       Tags:
         - 
           Key: Name
@@ -377,10 +377,7 @@ Resources:
           PropagateAtLaunch: 'true'
       VPCZoneIdentifier:
         - Ref: WebSubnetA
-        - Ref: WebSubnetB
-      TargetGroupARNs:
-        - 
-          Ref: albext1tg1 
+        - Ref: WebSubnetB 
 
   RDGWSubnetA:
     Type: 'AWS::EC2::Instance'
@@ -488,7 +485,6 @@ Resources:
           ToPort: '22'
           SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
           Description: "SSH traffic from RDGW in public Subnets A and B"  
-
       Tags:
         - Key: "Name"
           Value: !Join [ " : ", [ !Ref VPCName, external web] ]
@@ -510,13 +506,10 @@ Resources:
           ToPort: '22'
           SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
           Description: "SSH traffic from RDGW in public Subnets A and B"  
-
       Tags:
         - Key: "Name"
           Value: !Join [ " : ", [ !Ref VPCName, external web] ]
         
-
-  
   SGrdgwserveraccess:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
