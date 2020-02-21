@@ -19,7 +19,8 @@ There are two stages involved in setting up TechTestApp on AWS :
 2. Deploying the same via AWS cloudformation.  
 
             
-# AWS Architecture                                                
+    # AWS Architecture
+
 
      ![](images/Application_Architecture.png)
                                                   
