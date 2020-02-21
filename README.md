@@ -1,6 +1,6 @@
 # TechTestApp
 
-This repository holds the code and instructions to deploy the TechTestApp(..) using AWS cloudformation.
+This repository holds the code and instructions to deploy the TechTestApp using AWS cloudformation.
 
 The overall deployment steps are:
 1. Ensure the application is built well on local machine using the dev team instructions.  
