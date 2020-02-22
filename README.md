@@ -21,7 +21,7 @@ There are two stages involved in setting up TechTestApp on AWS :
 We can use the below CLI command through a local Jenkins setup in the below way:  
 
 1. Setup a local jenkins server to be able to pull out the AWS_CF.yml from the github repository. 
-2. Create an IAM use and attach the appropriate IAM policy to allow the user to create/update stacks in the AWS account.
+2. Create an IAM user and attach the appropriate IAM policy to allow the user to create/update stacks in the AWS account.
 3. Ensure to create a programmatic access for this user and note down the access key and secret access key in a safe location(do not upload it to the git repository).
 3. Setup a jenkins job to run the below AWS CLI command from the same location where you will pull the code.
 
