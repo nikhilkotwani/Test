@@ -111,6 +111,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "OPS"
+
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
@@ -123,6 +124,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, Public Subnet A ] ]
+
   PublicSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
@@ -135,6 +137,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, Public Subnet B ] ]
+
   WebSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
@@ -157,17 +160,20 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, Web Subnet B ] ]
+
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: "Name"
           Value: !Ref "VPCName"
+
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref "VPC"
       InternetGatewayId: !Ref "InternetGateway"
+
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -175,6 +181,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, Public Route Table ] ]
+
   RouteToIGW:
     Type: AWS::EC2::Route
     DependsOn: InternetGateway
@@ -182,24 +189,29 @@ Resources:
       RouteTableId: !Ref "PublicRouteTable"
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
+
   PubSubARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref "PublicSubnetA"
       RouteTableId: !Ref "PublicRouteTable"
+
   PubSubBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref "PublicSubnetB"
       RouteTableId: !Ref "PublicRouteTable"
+
   ElasticIPA:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
+
   ElasticIPB:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
+
   NATGatewayA:
     DependsOn: AttachGateway
     Type: AWS::EC2::NatGateway
@@ -209,6 +221,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, NGWA ] ]
+
   NATGatewayB:
     DependsOn: AttachGateway
     Type: AWS::EC2::NatGateway
@@ -218,6 +231,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, NGWB ] ]
+
   WebSubnetARouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -225,6 +239,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, Web Subnet A Route Table ] ]
+
   WebSubnetBRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -275,18 +290,21 @@ Resources:
       RouteTableId: !Ref "WebSubnetARouteTable"
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NATGatewayA  
+
   RouteToNATGatewayBfromWeb:
     Type: AWS::EC2::Route
     DependsOn: NATGatewayB
     Properties:
       RouteTableId: !Ref "WebSubnetBRouteTable"
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NATGatewayB      
+      NatGatewayId: !Ref NATGatewayB     
+
   WebSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref "WebSubnetA"
       RouteTableId: !Ref "WebSubnetARouteTable"
+
   WebSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -364,8 +382,6 @@ Resources:
     Properties:
       AutoScalingGroupName: TechTest ASG
       Cooldown: 120
-      DesiredCapacity:
-        Ref: 2
       LaunchConfigurationName: !Ref LaunchConfig
       LoadBalancerNames: !Ref 'albext1'
       MaxSize: 2
@@ -539,6 +555,14 @@ Metadata:
           - PubSubnetBCidr
           - WebSubnetACidr
           - WebSubnetBCidr
+          - DBName
+          - DBUser
+          - DBPassword
+          - MultiAZ
+          - DBAllocatedStorage
+          - DBInstanceClass
+          - InstanceType
+
     ParameterLabels:
       VPCName:
         default: "VPC Name"
@@ -552,6 +576,21 @@ Metadata:
         default: "Web Subnet A CIDR Block"
       WebSubnetBCidr:
         default: "Web Subnet B CIDR Block"
+      DBName:
+        default: "DB Name"
+      DBUser:
+        default: "DB user"
+      DBPassword:
+        default: "DB Password"
+      MultiAZ:
+        default: "Set MultiAZ"
+      DBAllocatedStorage:
+        default: "DB storage capacity"
+      DbInstanceClass:
+        default: "DB instance type"
+      InstanceType:
+        default: "EC2 instance type"
+
 Outputs:
   NATGatewayA:
     Description: NAT Gateway in AZ A
