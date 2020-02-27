@@ -270,10 +270,11 @@ Resources:
       - !Ref EC2WebRole
 
   S3AccessPolicy: # these actions are needed bu the Hacky LauchConfig UserData script which installs aws cli and code deploy agent from s3
-    Type: AWS::IAM::Policy
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Join [ "-", [ !Ref VPCName,S3,Access,policy ] ]
+      ManagedPolicyName: !Join [ "-", [ !Ref VPCName,S3,Access,policy ] ]
       PolicyDocument:
+        Version: "2012-10-17"
         Statement:
         - Effect: Allow
           Action:
@@ -342,9 +343,7 @@ Resources:
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      KeyName:
-        Ref: KeyName
-        ImageId: ami-0f767afb799f45102     
+      ImageId: ami-0f767afb799f45102     
       SecurityGroups: !Ref SGexternalWebserver
       IamInstanceProfile: !Ref EC2WebRoleProfile  
       UserData: !Base64 |
@@ -462,7 +461,7 @@ Resources:
       Tags:
       - Key: Name
         Value: Techtest DB
-      DBSecurityGroups: !Ref SGRDS 
+      DBSecurityGroups: !Ref 'AWS::NoValue'
     DeletionPolicy: Snapshot
   
   
@@ -503,26 +502,33 @@ Resources:
         - Key: "Name"
           Value: !Join [ " : ", [ !Ref VPCName, external web] ]
 
-  SGRDS:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupName: !Join [ " : ", [ !Ref VPCName, external web] ]
-      GroupDescription: !Join [ " : ", [ !Ref VPCName, external web] ]
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '5432'
-          ToPort: '5432'
-          SourceSecurityGroupId: !GetAtt SGexternalWebserver.GroupId
-          Description: "DB traffic from Web Servers"
-        - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
-          Description: "SSH traffic from RDGW in public Subnets A and B"  
-      Tags:
-        - Key: "Name"
-          Value: !Join [ " : ", [ !Ref VPCName, external web] ]
+#  SGRDS:
+#    Type: 'AWS::RDS::DBSecurityGroup'
+#    Properties:
+#      DBSecurityGroupIngress:
+#        EC2SecurityGroupName: !Ref 'DBSecurityGroup'
+#      GroupDescription: database access
+
+#  DBSecurityGroup:
+#    Type: 'AWS::EC2::SecurityGroup'
+#    Properties:
+#      GroupName: !Join [ " : ", [ !Ref VPCName, external web] ]
+#      GroupDescription: !Join [ " : ", [ !Ref VPCName, external web] ]
+#      VpcId: !Ref VPC
+#      SecurityGroupIngress:
+#        - IpProtocol: tcp
+#          FromPort: '5432'
+#          ToPort: '5432'
+#          SourceSecurityGroupId: !GetAtt SGexternalWebserver.GroupId
+#          Description: "DB traffic from Web Servers"
+#        - IpProtocol: tcp
+#          FromPort: '22'
+#          ToPort: '22'
+#          SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
+#          Description: "SSH traffic from RDGW in public Subnets A and B"  
+#      Tags:
+#        - Key: "Name"
+#          Value: !Join [ " : ", [ !Ref VPCName, external web] ]
         
   SGrdgwserveraccess:
     Type: 'AWS::EC2::SecurityGroup'
