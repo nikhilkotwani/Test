@@ -72,8 +72,6 @@ Parameters:
     Type: String
     MinLength: '1'
     MaxLength: '41'
-    AllowedPattern: '[a-zA-Z]'
-    ConstraintDescription: must contain only alphabets.
   MultiAZ:
     Description: Multi-AZ master database
     Type: String
@@ -365,7 +363,7 @@ Resources:
          aws s3 cp s3://testtechpackage/TechTestApp.tar /home/ec2-user/
          tar -xvf TechTestApp.tar
          sed '/DbHost/ s/localhost/$DBhost/' /home/ec2-user/TechTestApp/dist/conf.toml 
-         rm-rf TechTestApp.tar
+         rm -rf TechTestApp.tar
          nohup /home/ec2-user/TechTestApp/dist/TechTestApp updatedb -s > /home/ec2-user/TechTestAppDBUpdate.log &
          sleep 10
          nohup /home/ec2-user/TechTestApp/dist/TechTestApp serve > /home/ec2-user/TechTestApp.log & 
