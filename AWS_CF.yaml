@@ -353,7 +353,7 @@ Resources:
   albext1:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: "OPS-alb-ext-1"
+      Name: "alb-ext-1"
       Scheme: internet-facing
       Subnets:
       - Ref: PublicSubnetA
@@ -421,8 +421,8 @@ Resources:
       AutoScalingGroupName: TechTest ASG
       Cooldown: 120
       LaunchConfigurationName: !Ref LaunchConfig
-      LoadBalancerNames: 
-        - Ref : albext1
+      TargetGroupARNs: 
+        - Ref : albext1tg1
       MaxSize: 2
       MinSize: 2
       Tags:
@@ -556,12 +556,6 @@ Resources:
         - Key: "Name"
           Value: !Join [ " : ", [ !Ref VPCName, external web] ]
 
-#  SGRDS:
-#    Type: 'AWS::RDS::DBSecurityGroup'
-#    Properties:
-#      DBSecurityGroupIngress:
-#        EC2SecurityGroupName: !Ref 'DBSecurityGroup'
-#      GroupDescription: database access
 
   DBSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
