@@ -49,6 +49,22 @@ Parameters:
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
     Type: "String"
+  DBSubnetACidr:
+    Description: "IP address range of DB Subnet A"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.31.0/24"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Type: "String" 
+  DBSubnetBCidr:
+    Description: "IP address range of DB Subnet B"
+    MinLength: "9"
+    MaxLength: "18"
+    Default: "192.180.41.0/24"
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Type: "String"   
   DBName:
     Default: app
     Description: The database name
@@ -158,6 +174,30 @@ Resources:
       Tags:
         - Key: "Name"
           Value: !Join [ " ", [ !Ref VPCName, Web Subnet B ] ]
+
+  DbSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Ref "DBSubnetACidr"
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, DB Subnet A ] ]
+
+  DbSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref "VPC"
+      CidrBlock: !Ref "DBSubnetBCidr"
+      AvailabilityZone: !Select
+        - 2
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " ", [ !Ref VPCName, DB Subnet B ] ]                  
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -344,7 +384,8 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: ami-0f767afb799f45102     
-      SecurityGroups: !Ref SGexternalWebserver
+      SecurityGroups: 
+        - Ref: SGexternalWebserver
       IamInstanceProfile: !Ref EC2WebRoleProfile  
       UserData: !Base64 |
          #!/bin/bash -xe
@@ -380,7 +421,8 @@ Resources:
       AutoScalingGroupName: TechTest ASG
       Cooldown: 120
       LaunchConfigurationName: !Ref LaunchConfig
-      LoadBalancerNames: !Ref 'albext1'
+      LoadBalancerNames: 
+        - Ref : albext1
       MaxSize: 2
       MinSize: 2
       Tags:
@@ -448,6 +490,16 @@ Resources:
       - Key: "Name"
         Value: !Join [ " : ", [ !Ref VPCName, alb trg1 ] ]
 
+  
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+        DBSubnetGroupDescription: !Join [ " : ", [ !Ref VPCName, DB Subnetgroup ] ]
+        DBSubnetGroupName: !Join [ " : ", [ !Ref VPCName, DB Subnetgroup ] ]     
+        SubnetIds:
+        - Ref: DbSubnetA
+        - Ref: DbSubnetB  
+
   TechDB:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -460,8 +512,10 @@ Resources:
       MultiAZ: !Ref 'MultiAZ'
       Tags:
       - Key: Name
-        Value: Techtest DB
-      DBSecurityGroups: !Ref 'AWS::NoValue'
+        Value: TechtestDB
+      DBSubnetGroupName: !Ref DBSubnetGroup  
+      VPCSecurityGroups: 
+        - Ref: DBSecurityGroup
     DeletionPolicy: Snapshot
   
   
@@ -509,26 +563,26 @@ Resources:
 #        EC2SecurityGroupName: !Ref 'DBSecurityGroup'
 #      GroupDescription: database access
 
-#  DBSecurityGroup:
-#    Type: 'AWS::EC2::SecurityGroup'
-#    Properties:
-#      GroupName: !Join [ " : ", [ !Ref VPCName, external web] ]
-#      GroupDescription: !Join [ " : ", [ !Ref VPCName, external web] ]
-#      VpcId: !Ref VPC
-#      SecurityGroupIngress:
-#        - IpProtocol: tcp
-#          FromPort: '5432'
-#          ToPort: '5432'
-#          SourceSecurityGroupId: !GetAtt SGexternalWebserver.GroupId
-#          Description: "DB traffic from Web Servers"
-#        - IpProtocol: tcp
-#          FromPort: '22'
-#          ToPort: '22'
-#          SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
-#          Description: "SSH traffic from RDGW in public Subnets A and B"  
-#      Tags:
-#        - Key: "Name"
-#          Value: !Join [ " : ", [ !Ref VPCName, external web] ]
+  DBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Join [ " : ", [ !Ref VPCName, RDSDB] ]
+      GroupDescription: !Join [ " : ", [ !Ref VPCName, RDSDB] ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          SourceSecurityGroupId: !GetAtt SGexternalWebserver.GroupId
+          Description: "DB traffic from Web Servers"
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          SourceSecurityGroupId: !GetAtt SGrdgwserveraccess.GroupId
+          Description: "SQL requests from clients into the RDS instance"  
+      Tags:
+        - Key: "Name"
+          Value: !Join [ " : ", [ !Ref VPCName, RDSDB] ]
         
   SGrdgwserveraccess:
     Type: 'AWS::EC2::SecurityGroup'
