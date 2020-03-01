@@ -95,12 +95,12 @@ Parameters:
     AllowedValues: ['true', 'false']
     ConstraintDescription: must be true or false.  
   DBAllocatedStorage:
-    Default: '5'
+    Default: '20'
     Description: The size of the database (Gb)
     Type: Number
-    MinValue: '5'
-    MaxValue: '10'
-    ConstraintDescription: must be between 5 and 10Gb.
+    MinValue: '20'
+    MaxValue: '40'
+    ConstraintDescription: must be between 20 and 40Gb.
   DBInstanceClass:
     Description: The database instance type
     Type: String
@@ -124,7 +124,7 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: "Name"
-          Value: "OPS"
+          Value: "TechTest"
 
   PublicSubnetA:
     Type: AWS::EC2::Subnet
@@ -300,6 +300,7 @@ Resources:
               - "sts:AssumeRole"
       ManagedPolicyArns:
       - !Ref S3AccessPolicy
+      - !Ref RDSAccessPolicy
       Path: "/"    
   
   EC2WebRoleProfile:
@@ -309,7 +310,7 @@ Resources:
       Roles:
       - !Ref EC2WebRole
 
-  S3AccessPolicy: # these actions are needed bu the Hacky LauchConfig UserData script which installs aws cli and code deploy agent from s3
+  S3AccessPolicy: 
     Type: AWS::IAM::ManagedPolicy
     Properties:
       ManagedPolicyName: !Join [ "-", [ !Ref VPCName,S3,Access,policy ] ]
@@ -321,6 +322,18 @@ Resources:
           - s3:Get*
           - s3:List*
           Resource: ["arn:aws:s3:::testtechpackage/*"]
+
+  RDSAccessPolicy: 
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Join [ "-", [ !Ref VPCName,RDS,Access,policy ] ]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action:
+          - rds:Describe*
+          Resource: ["*"]        
 
   RouteToNATGatewayAfromWeb:
     Type: AWS::EC2::Route
@@ -382,33 +395,36 @@ Resources:
  
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
+    DependsOn: 
+      - TechDB
     Properties:
-      ImageId: ami-0f767afb799f45102     
+      ImageId: ami-0e45acff6b368f03d
       SecurityGroups: 
         - Ref: SGexternalWebserver
       IamInstanceProfile: !Ref EC2WebRoleProfile  
-      UserData: !Base64 |
-         #!/bin/bash -xe
-         sudo yum update -y
-         sudo yum install -y golang
-         mkdir /home/ec2-user/go/bin
-         $DBhost = !GetAtt [TechDB , Endpoint.Address ]
-         chown -R ec2-user:ec2-user /home/ec2-user
-         echo "export PATH=$PATH:/usr/lib/golang/bin/" > ~/.bash_profile
-         echo "export GOPATH=/home/ec2-user/go/" >> ~/.bash_profile
-         echo "export GOROOT=/usr/lib/golang/bin" >> ~/.bash_profile
-         echo "export GOBIN=/home/ec2-user/go/bin" >> ~/.bash_profile
-         source ~/.bash_profile
-         curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-         aws s3 cp s3://testtechpackage/TechTestApp.tar /home/ec2-user/
-         tar -xvf TechTestApp.tar
-         sed '/DbHost/ s/localhost/$DBhost/' /home/ec2-user/TechTestApp/dist/conf.toml 
-         rm -rf TechTestApp.tar
-         nohup /home/ec2-user/TechTestApp/dist/TechTestApp updatedb -s > /home/ec2-user/TechTestAppDBUpdate.log &
-         sleep 10
-         nohup /home/ec2-user/TechTestApp/dist/TechTestApp serve > /home/ec2-user/TechTestApp.log & 
+      UserData: 
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y
+            yum install -y golang
+            mkdir -p /home/ec2-user/go/bin
+            chown -R ec2-user:ec2-user /home/ec2-user
+            echo "export PATH=$PATH:/usr/lib/golang/bin/" > ~/.bash_profile
+            echo "export GOPATH=/home/ec2-user/go/" >> ~/.bash_profile
+            echo "export GOROOT=/usr/lib/golang/bin" >> ~/.bash_profile
+            echo "export GOBIN=/home/ec2-user/go/bin" >> ~/.bash_profile
+            source ~/.bash_profile
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            aws s3 cp s3://testtechpackage/TechTestApp.tar /home/ec2-user/
+            tar -xvf /home/ec2-user/TechTestApp.tar -C /home/ec2-user/
+            sed -i '/DbHost/ s/localhost/${TechDB.Endpoint.Address}/' /home/ec2-user/TechTestApp/dist/conf.toml
+            rm -rf /home/ec2-user/TechTestApp.tar
+            cd /home/ec2-user/TechTestApp/dist/
+            nohup /home/ec2-user/TechTestApp/dist/TechTestApp updatedb -s > /home/ec2-user/TechTestAppDBUpdate.log &
+            sleep 10
+            nohup /home/ec2-user/TechTestApp/dist/TechTestApp serve > /home/ec2-user/TechTestApp.log & 
       InstanceType: !Ref 'InstanceType'
-      LaunchConfigurationName: TechTestLaunchConfiguration
 
   
   AutoScalingGroup:
@@ -450,6 +466,11 @@ Resources:
         - 
           Key: "Environment"
           Value: !Ref VPCName
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y      
 
   RDGWSubnetB:
     Type: 'AWS::EC2::Instance'
@@ -466,11 +487,17 @@ Resources:
           Value: !Join [ " : ", [ !Ref VPCName, RDGWSubnetB ] ]
         - 
           Key: "Environment"
-          Value: !Ref VPCName  
+          Value: !Ref VPCName
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y       
                 
   albext1tg1:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
+      HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 30
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
@@ -543,7 +570,7 @@ Resources:
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: '80'
+          FromPort: '3000'
           ToPort: '3000'
           SourceSecurityGroupId: !GetAtt SGalbext1.GroupId
           Description: "HTTP traffic from alb ext 1"
