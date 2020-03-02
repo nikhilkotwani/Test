@@ -2,10 +2,10 @@ AWSTemplateFormatVersion:
   "2010-09-09"
 Description:
   "A web application VPC with two private subnets and two public subnets in two AZ"
-Parameters:
+Parameters: # This section of the CF template accepts inputs required to build the entire VPC
   VPCName:
     Default: TechTest
-    Description: "TechTest"
+    Description: "The VPC name"
     Type: "String"
   KeyName:
     Default: Techtest
@@ -67,7 +67,7 @@ Parameters:
     Type: "String"   
   DBName:
     Default: app
-    Description: The database name
+    Description: The RDS database name
     Type: String
     MinLength: '1'
     MaxLength: '64'
@@ -114,7 +114,7 @@ Parameters:
     AllowedValues: [t2.micro]
    
 
-Resources:
+Resources:  # This section of the CF template creates the entire VPC with all the resources
   VPC:
     Type: AWS::EC2::VPC
     Properties:
