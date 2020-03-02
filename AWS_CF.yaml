@@ -300,7 +300,6 @@ Resources:
               - "sts:AssumeRole"
       ManagedPolicyArns:
       - !Ref S3AccessPolicy
-      - !Ref RDSAccessPolicy
       Path: "/"    
   
   EC2WebRoleProfile:
@@ -322,18 +321,6 @@ Resources:
           - s3:Get*
           - s3:List*
           Resource: ["arn:aws:s3:::testtechpackage/*"]
-
-  RDSAccessPolicy: 
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      ManagedPolicyName: !Join [ "-", [ !Ref VPCName,RDS,Access,policy ] ]
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-        - Effect: Allow
-          Action:
-          - rds:Describe*
-          Resource: ["*"]        
 
   RouteToNATGatewayAfromWeb:
     Type: AWS::EC2::Route
