@@ -394,15 +394,6 @@ Resources:  # This section of the CF template creates the entire VPC with all th
           !Sub |
             #!/bin/bash -xe
             yum update -y
-            yum install -y golang
-            mkdir -p /home/ec2-user/go/bin
-            chown -R ec2-user:ec2-user /home/ec2-user
-            echo "export PATH=$PATH:/usr/lib/golang/bin/" > ~/.bash_profile
-            echo "export GOPATH=/home/ec2-user/go/" >> ~/.bash_profile
-            echo "export GOROOT=/usr/lib/golang/bin" >> ~/.bash_profile
-            echo "export GOBIN=/home/ec2-user/go/bin" >> ~/.bash_profile
-            source ~/.bash_profile
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             aws s3 cp s3://testtechpackage/TechTestApp.tar /home/ec2-user/
             tar -xvf /home/ec2-user/TechTestApp.tar -C /home/ec2-user/
             sed -i '/DbHost/ s/localhost/${TechDB.Endpoint.Address}/' /home/ec2-user/TechTestApp/dist/conf.toml
