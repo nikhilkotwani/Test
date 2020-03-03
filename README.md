@@ -12,7 +12,41 @@ Contents of the repository:
 
 There are two stages involved in setting up TechTestApp on AWS :  
 1. Building the application locally using go (instructions for the same are located here : https://github.com/servian/TechTestApp/blob/master/doc/readme.md)  
-2. Deploying the same via AWS cloudformation.  
+2. Deploying the same via AWS cloudformation. 
+
+
+# Overview of the Cloudformation Template
+
+1. Spin up a Private VPC with :
+    - Two public subnets in each Availibility Zone.  
+    - Two Private subnets in each Availibility Zone.  
+    - Two DB subnets in each Availibility Zone. 
+    - Two public route tables to be associated with the public subnets.
+    - Two private route tables to be associated with the private subnets.
+    - An internet gateway for both the public subnets.
+    - Attaching the internet gateway to the  public route tables.
+    - Two NAT gateways in each of the public subnets in each of the Availibility zone.  
+    - Attaching each of the private subnets to the above two NAT gateways 
+    - TWo jump servers/RDGW in each of the public subnets.  
+    - Two Elastic IPs to attach to each of the above mentioned NAT gateways.  
+    - A launch configuration mentioning the instance types , AMI to be used , subnet association , security group association , the user data that will execute the application deployment etc.
+    - An autoscaling group of EC2 instances in the private subnets that will spin up instances using the above mentioned launch configuration.  
+    - A target group wherein the above created instances in the auto scaling group will be registered on port 3000.  
+    - An application load balancer bound to the target group.  
+    - A listener listening on port 80 on the application load balancer.  
+    - An IAM policy to allow access to the specific s3 bucket to download the application package.  
+    - An EC2 role having the above policy attached along with an instance profile to attach to the instances launched in the auto scaling group using the launch configuration.  
+    - an RDS instance with MultiAZ enabled having postgreSQL engine.  
+    - A key for the jumpservers to be able to login.  
+    - A security group for jump servers in the public subnets.  
+    - A security group for the EC2 instances launched in an auto scaling group in the private subnets.
+    - A security group for the above mentioned RDS service.  
+    - Ingress rules for :  
+        - Allowing selective traffic from the internet  to the public subnet security group on ports 22.  
+        - Allowing traffic from the public subnet security group to the private security group on ports 22,3000.  
+        - Allowing traffic from the private subnet security group to the DB security group on ports 5432.  
+        - Allowing traffic from the public subnet security group to the DB security group on ports 5432.  
+
 
 # Prerequisites  
 
@@ -21,7 +55,8 @@ Ensure the below prerequisites are met on the buildserver before building and de
 1.  Golang is installed.  
 2.  Dep is installed.  
 3. AWS CLI is installed and configured with an IAM user that has appropriate permissions to spin up a complete VPC using cloudformation templates and also upload package to s3 bucket in the AWS account.  
-4.  OS is updated with the latest patches.    
+4. OS is updated with the latest patches. 
+5. A prebaked AMI with    
 
 
 
@@ -29,8 +64,10 @@ Ensure the below prerequisites are met on the buildserver before building and de
 
 We can use the below method to build the application using go:  
 
-1.  Prepare a shell script that contains all the build steps ( as kept in bin/appbuild.sh).  
+1.  Use the shell script kept in bin/appbuild.sh that contains all the build steps.
+
 2. Schedule a jenkins job on the local build server that will trigger this script as soon as it observes a code change in the repository https://github.com/servian/TechTestApp  
+
 3. Trigger the jenkins job mentioned below to spin up a new AWS environment.  
 
 
