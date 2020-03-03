@@ -139,12 +139,18 @@ Below are advantages of this architecture:
 
 # Enhancements
 
-The below enhancments are advised in the existing deployment process.
+The below enhancements are advised in the existing deployment process.
 
 1. Request a Domain for the web application (through Route53 or other provider) and issue a self signed certificate for this domain  through ACM , this will allow traffic over https.
 2. Open port 443  to allow HTTPS traffic over the load balancer.
 3. In case of heavy read traffic , create read-replicas for the RDS and redirect read requests to the read replicas. This can be achieved by creating another DB endpoint in the web application that will only be used for read requests.
-
+4. Setup cloudwatch alerts to trigger actions like : 
+    -   Send an email/SNS notification in case of CPU utilization exceeds 90% for 30 minutes .
+    -   Send an email/SNS notification in case of low disk space observed.
+    -   Trigger email/SNS notification if Auto scaling group is scaling up/down.
+    -   Setup scaling policies to scale up if  CPU utilization reaches 90% and remains there for 15 minutes.
+    -   Setup scaling policies to scale down if CPU utilization goes below 90% after 15 minutes.
+5. Setup cloudtrail logs to track API calls made to the AWS resources in the account : EC2 , VPC , ELB , S3      
 
     
 # AWS Architecture
