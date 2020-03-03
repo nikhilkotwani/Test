@@ -137,6 +137,14 @@ Below are advantages of this architecture:
 
 9. <b><i>Simplicity</b></u> - As a web service running “in the cloud”, RDS lets you simplify the setup, operation, and scaling of a relational database for use in applications.  
 
+# Enhancements
+
+The below enhancments are advised in the existing deployment process.
+
+1. Request a Domain for the web application (through Route53 or other provider) and issue a self signed certificate for this domain  through ACM , this will allow traffic over https.
+2. Open port 443  to allow HTTPS traffic over the load balancer.
+3. In case of heavy read traffic , create read-replicas for the RDS and redirect read requests to the read replicas. This can be achieved by creating another DB endpoint in the web application that will only be used for read requests.
+
 
     
 # AWS Architecture
