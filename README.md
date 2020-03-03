@@ -52,7 +52,7 @@ aws cloudformation create-stack --template-body file:///var/lib/jenkins/workspac
 
 Below are advantages of this architecture:
 
-1.  Better fault tolerance - Auto Scaling can detect when an instance is unhealthy, terminate it, and launch an instance to replace it. You can also configure Amazon EC2 Auto Scaling to use multiple Availability Zones. If one Availability Zone becomes unavailable, Amazon EC2 Auto Scaling can launch instances in another one to compensate.
+1.  <b>Better fault tolerance<b> - Auto Scaling can detect when an instance is unhealthy, terminate it, and launch an instance to replace it. You can also configure Amazon EC2 Auto Scaling to use multiple Availability Zones. If one Availability Zone becomes unavailable, Amazon EC2 Auto Scaling can launch instances in another one to compensate.
 
 2.  Better availability -  Auto Scaling helps ensure that your application always has the right amount of capacity to handle the current traffic demand.
 
