@@ -44,7 +44,7 @@ We can use the below method to build the application using go:
 1. Setup a jenkins job on the build server that will pull the AWS_CF.yaml and run the cloudformation create-stack CLI command to spin up a Private VPC in the AWS account.  
 
 eg:
-<i>aws cloudformation create-stack --template-body <location_of_template> --stack-name <<name_of_stack> --parameters ParameterKey=<parameter1>,ParameterValue=<value1> --region <<region>> --capabilities CAPABILITY_NAMED_IAM</i>   
+<i>aws cloudformation create-stack --template-body <location_of_template> --stack-name <<name_of_stack> --parameters ParameterKey=<parameter1>,ParameterValue=<value1> --region <<AWS_region>> --capabilities CAPABILITY_NAMED_IAM</i>   
 
 The script bin/spinupAWS.sh contains the actual script used to spinup the AWS environment.
 
