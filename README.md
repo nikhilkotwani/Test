@@ -18,6 +18,7 @@ There are two stages involved in setting up TechTestApp on AWS :
 # Overview of the Cloudformation Template
 
 1. Spin up a Private VPC with :
+    - A VPC in the default selected region , this can be changed by passing region name as a parameter.
     - Two public subnets in each Availibility Zone.  
     - Two Private subnets in each Availibility Zone.  
     - Two DB subnets in each Availibility Zone. 
@@ -28,7 +29,7 @@ There are two stages involved in setting up TechTestApp on AWS :
     - Two NAT gateways in each of the public subnets in each of the Availibility zone.  
     - Attaching each of the private subnets to the above two NAT gateways 
     - TWo jump servers/RDGW in each of the public subnets.  
-    - Two Elastic IPs to attach to each of the above mentioned NAT gateways.  
+    - Two Elastic IPs to attach to each of the  NAT gateways.  
     - A launch configuration mentioning the instance types , AMI to be used , subnet association , security group association , the user data that will execute the application deployment etc.
     - An autoscaling group of EC2 instances in the private subnets that will spin up instances using the above mentioned launch configuration.  
     - A target group wherein the above created instances in the auto scaling group will be registered on port 3000.  
@@ -40,12 +41,31 @@ There are two stages involved in setting up TechTestApp on AWS :
     - A key for the jumpservers to be able to login.  
     - A security group for jump servers in the public subnets.  
     - A security group for the EC2 instances launched in an auto scaling group in the private subnets.
-    - A security group for the above mentioned RDS service.  
-    - Ingress rules for :  
+    - A security group for the RDS service. 
+    - A security group for the Application load balancer.
+    - Ingress rules for : 
+        - Allowing all HTTP traffic from the internet to the load balcner security group on port 80. 
         - Allowing selective traffic from the internet  to the public subnet security group on ports 22.  
         - Allowing traffic from the public subnet security group to the private security group on ports 22,3000.  
         - Allowing traffic from the private subnet security group to the DB security group on ports 5432.  
-        - Allowing traffic from the public subnet security group to the DB security group on ports 5432.  
+        - Allowing traffic from the public subnet security group to the DB security group on ports 5432. 
+
+2. The below parameters need to be passed to the template , if any/all parameters are not passed , Cloudformation will select the default values mentioned in the template:
+
+    - VPCName
+    - KeyName
+    - VPCCidr
+    - PubSubnetACidr
+    - PubSubnetBCidr
+    - WebSubnetACidr
+    - WebSubnetBCidr
+    - DBName
+    - DBUser
+    - DBPassword
+    - MultiAZ
+    - DBAllocatedStorage
+    - DBInstanceClass
+    - InstanceType
 
 
 # Prerequisites  

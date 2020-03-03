@@ -608,6 +608,7 @@ Metadata:
           default: "VPC Configuration"
         Parameters:
           - VPCName
+          - KeyName
           - VPCCidr
           - PubSubnetACidr
           - PubSubnetBCidr
