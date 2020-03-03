@@ -49,7 +49,7 @@ eg:
 
 # Delete the AWS infrastructure once the objective is fulfilled.
 
-2. Setup another jenkins job on the build server that will delete the AWS infrastructure using the bin\deleteAWSenv.sh once the objective of the environment is fulfilled.It will use the cloudformation delete-stack CLI command similar to the one mentioned below.
+1. Setup another jenkins job on the build server that will delete the AWS infrastructure using the bin\deleteAWSenv.sh once the objective of the environment is fulfilled.It will use the cloudformation delete-stack CLI command similar to the one mentioned below.
 
 eg:
 aws cloudformation delete-stack --stack-name <name_of_stack> --region <AWS_region>
