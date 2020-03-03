@@ -135,7 +135,19 @@ Below are advantages of this architecture:
 
 8. <b><i>Vertical and horizontal scalability</b></u> - Combination of EC2 and Auto scaling with Cloudformation enables us to quickly scale servers horizontally ( by adding/deleting servers to meet demand) as well as vertically ( upgrade/downgrade EC2 instance types). Also RDS is an excellent option for keeping up with the increasing demands of your application or applications. To scale your RDS instance vertically, you can resize your instance type and apply the change immediately. And for scaling your database horizontally, you can use read replicas and add a load balancer between your application and database servers, both of which improve the performance of a read-heavy database.  
 
-9. <b><i>Simplicity</b></u> - As a web service running “in the cloud”, RDS lets you simplify the setup, operation, and scaling of a relational database for use in applications.  
+9. <b><i>Simplicity</b></u> - As a web service running “in the cloud”, RDS lets you simplify the setup, operation, and scaling of a relational database for use in applications.
+
+10. <b><i>Automatic Management</b></u> - For RDS , we don’t have to worry about patching the database software, backing up databases, replication, or enabling point-in-time recovery. All these tasks are managed automatically — and with a single API call.
+
+11. <b><i>Minimal Downtime</b></u> - Importing Data to an Amazon RDS MySQL instance is easy to do without significant downtime. You can move data in and out of Amazon RDS using backup files, Amazon S3 .  So whether you’re transferring a copy of your database to an EC2 instance, replication is straightforward and lightweight, with little downtime.
+
+12. <b><i>Affordability</b></u> - Hosting data on AWS helps organizations to move faster and scale at lower costs. Compared to other solutions, RDS is highly affordable. You can pay for your database by the hour with no long-term commitments or upfront fees, which means you don’t have to buy database capacity ahead of time. This pay-as-you-go model is ideal for development, test and other short-lived workloads.
+
+13. <b><i>Speed & Performance</b></u> - We can monitor DB performance using cloudwatch and setup notifications / triggers based on the performance. This will ensure we handle issues proactively rather than being reactive to issues.
+
+14. <b><i>Automated Backup</b></u> -  This functionality automatically performs a full daily snapshot of a database’s data (during a preferred window of time set up by the user). It also captures your transaction logs as well as any updates to your RDS database.
+
+
 
 # Enhancements
 
@@ -150,7 +162,7 @@ The below enhancements are advised in the existing deployment process.
     -   Trigger email/SNS notification if Auto scaling group is scaling up/down.
     -   Setup scaling policies to scale up if  CPU utilization reaches 90% and remains there for 15 minutes.
     -   Setup scaling policies to scale down if CPU utilization goes below 90% after 15 minutes.
-5. Setup cloudtrail logs to track API calls made to the AWS resources in the account : EC2 , VPC , ELB , S3      
+5. Setup cloudtrail logs to track API calls made to the AWS resources in the account : EC2 , VPC , ELB , S3.      
 
     
 # AWS Architecture
