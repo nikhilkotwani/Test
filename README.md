@@ -9,6 +9,9 @@ Contents of the repository:
 3. images/AWS_CF_architecture.png --> Architecture as built in AWS Cloudformation.
 4. TechTestApp.tar --> The complete source code with compiled package.
 5. Readme.md --> Information about the solution.
+6. bin/appbuild.sh --> Shell script to build the go application.
+7. bin/spinupAWS.sh --> Shell script to spin up the AWS infrastructure and deploy the applicaton.
+8. deleteAWSenv.sh --> Shell script to delete the created AWS infrastructure.
 
 There are two stages involved in setting up TechTestApp on AWS :  
 1. Building the application using go (instructions for the same are located here : https://github.com/servian/TechTestApp/blob/master/doc/readme.md)  
