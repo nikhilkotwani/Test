@@ -1,0 +1,5 @@
+#!/bin/bash -xe
+aws cloudformation create-stack --template-body file:///var/lib/jenkins/workspace/SpinupAWSEnvironment/AWS_CF.yaml --stack-name TestTechApp --parameters ParameterKey=VPCName,ParameterValue=TechTest ParameterKey=KeyName,ParameterValue=k8s-kp ParameterKey=VPCCidr,ParameterValue=192.180.0.0/16 ParameterKey=PubSubnetACidr,ParameterValue=192.180.10.0/24 ParameterKey=PubSubnetBCidr,ParameterValue=192.180.20.0/24 ParameterKey=WebSubnetACidr,ParameterValue=192.180.11.0/24 ParameterKey=WebSubnetBCidr,ParameterValue=192.180.21.0/24 ParameterKey=DBName,ParameterValue=app ParameterKey=DBUser,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=changeme ParameterKey=MultiAZ,ParameterValue=false ParameterKey=DBAllocatedStorage,ParameterValue=20 ParameterKey=DBInstanceClass,ParameterValue=db.t2.micro ParameterKey=InstanceType,ParameterValue=t2.micro --region ap-southeast-2 --capabilities CAPABILITY_NAMED_IAM
+echo "Ran the template , waiting for it to complete creation.."
+aws cloudformation wait stack-create-complete --stack-name TestTechApp --region ap-southeast-2
+echo "Stack is ready , Please check the AWS console"
