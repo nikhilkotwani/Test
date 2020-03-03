@@ -37,21 +37,19 @@ We can use the below method to build the application using go:
 
 # Deploy the AWS infrastructure with the newly built app 
 
-1. Setup a jenkins job on the build server that will pull the AWS_CF.yaml and run the cloudformation create-stack CLI command to spin up a Private VPC in the AWS account.  
+1. Setup a jenkins job on the build server that will pull the AWS_CF.yaml and run the cloudformation create-stack CLI command to spin up a Private VPC in the AWS account.The script bin/spinupAWS.sh contains the actual script used to spinup the AWS environment. 
+
+    <b>*Note</b> : Due to security reasons , better to pass the values for these parameters as Jenkins parameters.
+
 
 eg:
 <i>aws cloudformation create-stack --template-body <location_of_template> --stack-name <name_of_stack> --parameters ParameterKey=<Parameter_1>,ParameterValue=<Value_1> --region <AWS_region> --capabilities CAPABILITY_NAMED_IAM</i>   
 
-The script bin/spinupAWS.sh contains the actual script used to spinup the AWS environment.
-
-*Note : Due to security reasons , better to pass the values for these parameters as Jenkins parameters.
 
 
 # Delete the AWS infrastructure once the objective is fulfilled.
 
-Delete the AWS infrastructure using the bin\deleteAWSenv.sh once the objective of the environment is fulfilled.
-
-It is using the cloudformation delete-stack CLI command
+2. Setup another jenkins job on the build server that will delete the AWS infrastructure using the bin\deleteAWSenv.sh once the objective of the environment is fulfilled.It will use the cloudformation delete-stack CLI command similar to the one mentioned below.
 
 eg:
 aws cloudformation delete-stack --stack-name <name_of_stack> --region <AWS_region>
