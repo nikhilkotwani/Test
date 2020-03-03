@@ -18,16 +18,35 @@ There are two stages involved in setting up TechTestApp on AWS :
 1. Building the application locally using go (instructions for the same are located here : https://github.com/servian/TechTestApp/blob/master/doc/readme.md)  
 2. Deploying the same via AWS cloudformation.  
 
-We can use the below CLI command through a local Jenkins setup in the below way:  
+# Prerequisites  
 
-1. Setup a local jenkins server to be able to pull out the AWS_CF.yml from the github repository. 
-2. Create an IAM user and attach the appropriate IAM policy to allow the user to create/update stacks in the AWS account.
-3. Ensure to create a programmatic access for this user and note down the access key and secret access key in a safe location(do not upload it to the git repository).
-3. Setup a jenkins job to run the below AWS CLI command from the same location where you will pull the code.
+Ensure the below prerequisites are met before building and deploying the application:  
 
-aws cloudformation create-stack --template-body file://AWS_CF.yml --stack-name TestTechApp --parameters ParameterKey=VPCName,ParameterValue=TechTest ParameterKey=KeyName,ParameterValue=TechTest ParameterKey=VPCCidr, ParameterValue=192.180.0.0/16 ParameterKey=PubSubnetACidr,ParameterValue=192.180.10.0/24 ParameterKey=PubSubnetBCidr,ParameterValue=192.180.20.0/24 ParameterKey=WebSubnetACidr,ParameterValue=192.180.11.0/24 ParameterKey=WebSubnetBCidr,ParameterValue=192.180.21.0/24 ParameterKey=DBName,ParameterValue=app ParameterKey=DBUser,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=changeme ParameterKey=MultiAZ,ParameterValue=true ParameterKey=DBAllocatedStorage,ParameterValue=5 ParameterKey=DBInstanceClass,ParameterValue=db.t2.micro ParameterKey=InstanceType,ParameterValue=t2.micro         
+1.   Golang is installed on the system.  
+2.  Dep is installed on the system.  
+3. AWS CLI is installed and configured with an IAM user that has appropriate permissions to spin up a complete VPC using cloudformation templates and also upload package to s3 bucket in the AWS account.  
+4.  OS is updated with the latest patches.    
 
-*Note : Due to security reasons , better to pass the values for these parameters as Jenkins parameters.
+
+
+# Building the application.  
+
+We can use the below method to build the application using go:  
+
+1.  Prepare a shell script that contains all the build steps ( as kept in build/....sh).  
+2. Schedule a jenkins job on the local build server that will trigger this script as soon as it observes a code change in the repository https://github.com/servian/TechTestApp  
+3. Trigger the jenkins job mentioned below to spin up a new AWS environment.  
+
+
+
+# Deploy the AWS infrastructure with the newly built app.  
+
+1. Setup a jenkins job on the build server that will pull the AWS_CF.yaml abd run the below CLI command to spin up a Private VPC in the AWS account.  
+
+
+aws cloudformation create-stack --template-body file:///var/lib/jenkins/workspace/SpinupAWSEnvironment/AWS_CF.yaml --stack-name TestTechApp --parameters ParameterKey=VPCName,ParameterValue=TechTest ParameterKey=KeyName,ParameterValue=k8s-kp ParameterKey=VPCCidr,ParameterValue=192.180.0.0/16 ParameterKey=PubSubnetACidr,ParameterValue=192.180.10.0/24 ParameterKey=PubSubnetBCidr,ParameterValue=192.180.20.0/24 ParameterKey=WebSubnetACidr,ParameterValue=192.180.11.0/24 ParameterKey=WebSubnetBCidr,ParameterValue=192.180.21.0/24 ParameterKey=DBName,ParameterValue=app ParameterKey=DBUser,ParameterValue=postgres ParameterKey=DBPassword,ParameterValue=changeme ParameterKey=MultiAZ,ParameterValue=false ParameterKey=DBAllocatedStorage,ParameterValue=20 ParameterKey=DBInstanceClass,ParameterValue=db.t2.micro ParameterKey=InstanceType,ParameterValue=t2.micro --region ap-southeast-2 --capabilities CAPABILITY_NAMED_IAM          
+
+*Note : Due to security reasons , better to pass the values for these parameters as Jenkins parameters.  
 
 
 
