@@ -397,6 +397,7 @@ Resources:  # This section of the CF template creates the entire VPC with all th
             aws s3 cp s3://testtechpackage/TechTestApp.tar /home/ec2-user/
             tar -xvf /home/ec2-user/TechTestApp.tar -C /home/ec2-user/
             sed -i '/DbHost/ s/localhost/${TechDB.Endpoint.Address}/' /home/ec2-user/TechTestApp/dist/conf.toml
+            sed -i '/ListenHost/ s/localhost/0.0.0.0/' /home/ec2-user/TechTestApp/dist/conf.toml
             rm -rf /home/ec2-user/TechTestApp.tar
             cd /home/ec2-user/TechTestApp/dist/
             nohup /home/ec2-user/TechTestApp/dist/TechTestApp updatedb -s > /home/ec2-user/TechTestAppDBUpdate.log &

@@ -58,7 +58,21 @@ aws cloudformation create-stack --template-body file:///var/lib/jenkins/workspac
                                                   
                                                     
                                                       
-                                                        
+   # Advantages  
+
+    Below are advantages of this architecture:
+
+    1.  Better fault tolerance - Auto Scaling can detect when an instance is unhealthy, terminate it, and launch an instance to replace it. You can also configure Amazon EC2 Auto Scaling to use multiple Availability Zones. If one Availability Zone becomes unavailable, Amazon EC2 Auto Scaling can launch instances in another one to compensate.
+
+    2.  Better availability -  Auto Scaling helps ensure that your application always has the right amount of capacity to handle the current traffic demand.
+
+    3.  Better cost management -  Auto Scaling can dynamically increase and decrease capacity as needed. Because you pay for the EC2 instances you use, you save money by launching instances when they are needed and terminating them when they aren't.
+
+    4. Logical isolation - Isolating resources in AWS using VPC helps you build and maintain a secure environment like your own managed data center.
+
+    5. Secure access - Having a private VPC helps you control the level of access resources require . You can choose to enable/disable internet access.
+
+    6.   
 
                
 
