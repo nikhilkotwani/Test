@@ -1,6 +1,6 @@
 # TechTestApp
 
-This repository holds the code and instructions to deploy the TechTestApp using AWS cloudformation.
+This repository holds the code and instructions to automate the build and deploy TechTestApp using AWS cloudformation.
 
 Contents of the repository: 
 
