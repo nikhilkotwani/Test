@@ -11,7 +11,7 @@ Contents of the repository:
 5. Readme.md --> Information about the solution.
 
 There are two stages involved in setting up TechTestApp on AWS :  
-1. Building the application locally using go (instructions for the same are located here : https://github.com/servian/TechTestApp/blob/master/doc/readme.md)  
+1. Building the application using go (instructions for the same are located here : https://github.com/servian/TechTestApp/blob/master/doc/readme.md)  
 2. Deploying the same via AWS cloudformation. 
 
 
@@ -76,7 +76,8 @@ Ensure the below prerequisites are met on the buildserver before building and de
 2.  Dep is installed.  
 3. AWS CLI is installed and configured with an IAM user that has appropriate permissions to spin up a complete VPC using cloudformation templates and also upload package to s3 bucket in the AWS account.  
 4. OS is updated with the latest patches. 
-5. A prebaked AMI with    
+5. A prebaked AMI with password based authentication enabled.
+6. A key to allow passwordless authentication to the jump servers.  
 
 
 
