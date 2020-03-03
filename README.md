@@ -70,9 +70,15 @@ aws cloudformation create-stack --template-body file:///var/lib/jenkins/workspac
 
     4. Logical isolation - Isolating resources in AWS using VPC helps you build and maintain a secure environment like your own managed data center.
 
-    5. Secure access - Having a private VPC helps you control the level of access resources require . You can choose to enable/disable internet access.
+    5. Secure access - Having a private VPC helps you control the level of access resources require . You can choose to enable/disable internet access.It provides advanced security features, such as security groups and network access control lists, to enable inbound and outbound filtering at the instance and subnet level.  
 
-    6.   
+    6. Customizable - Control your virtual networking environment, including selection of your own IP address range, creation of subnets, and configuration of route tables and network gateways. Customize the network configuration, such as by creating a public-facing subnet for your webservers that has access to the internet, and placing your backend systems such as databases or application servers in a private-facing subnet with no internet access.  
+
+    7. Environment on-demand - Use of cloudformation template helps us to quickly build and scrap environments build for demonstration purpose . This enables us to focus on the architecting the infrastructure while emphasizing more on using feature rich AWS resources while spending less time on managing it.  
+
+    8. Vertical and horizontal scalability - Combination of EC2 and Auto scaling with Cloudformation enables us to quickly scale servers horizontally ( by adding/deleting servers to meet demand) as well as vertically ( upgrade/downgrade EC2 instance types). Also RDS is an excellent option for keeping up with the increasing demands of your application or applications. To scale your RDS instance vertically, you can resize your instance type and apply the change immediately. And for scaling your database horizontally, you can use read replicas and add a load balancer between your application and database servers, both of which improve the performance of a read-heavy database.  
+
+    9. Simplicity - As a web service running “in the cloud”, RDS lets you simplify the setup, operation, and scaling of a relational database for use in applications.  
 
                
 
