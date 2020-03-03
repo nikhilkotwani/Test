@@ -20,10 +20,10 @@ There are two stages involved in setting up TechTestApp on AWS :
 
 # Prerequisites  
 
-Ensure the below prerequisites are met before building and deploying the application:  
+Ensure the below prerequisites are met on the buildserver before building and deploying the application:  
 
-1.  Golang is installed on the system.  
-2.  Dep is installed on the system.  
+1.  Golang is installed.  
+2.  Dep is installed.  
 3. AWS CLI is installed and configured with an IAM user that has appropriate permissions to spin up a complete VPC using cloudformation templates and also upload package to s3 bucket in the AWS account.  
 4.  OS is updated with the latest patches.    
 
