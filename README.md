@@ -48,17 +48,15 @@ aws cloudformation create-stack --template-body file:///var/lib/jenkins/workspac
 
 *Note : Due to security reasons , better to pass the values for these parameters as Jenkins parameters.  
 
+    
+# AWS Architecture
 
 
-            
-    # AWS Architecture
-
-
-     ![](images/Application_Architecture.png)
+![](images/Application_Architecture.png)
                                                   
                                                     
                                                       
-   # Advantages  
+# Advantages  
 
     Below are advantages of this architecture:
 
