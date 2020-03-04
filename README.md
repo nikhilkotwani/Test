@@ -162,7 +162,10 @@ The below enhancements are advised in the existing deployment process.
     -   Trigger email/SNS notification if Auto scaling group is scaling up/down.
     -   Setup scaling policies to scale up if  CPU utilization reaches 90% and remains there for 15 minutes.
     -   Setup scaling policies to scale down if CPU utilization goes below 90% after 15 minutes.
-5. Setup cloudtrail logs to track API calls made to the AWS resources in the account : EC2 , VPC , ELB , S3.      
+5. Setup cloudtrail logs to track API calls made to the AWS resources in the account : EC2 , VPC , ELB , S3. 
+6. Setup Network ACLs across the public subnets to restrict outgoing traffic.
+7. Setup backup strategy for backing up application logs in case EC2 instance destroys as part of replacement / scale down.
+8. Schedule volume backups/AMI creation to ensure point in time restore in case of Disaster recovery.
 
     
 # AWS Architecture
